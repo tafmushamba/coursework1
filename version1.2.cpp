@@ -9,12 +9,14 @@
 
 using namespace std;
 
+// Structure to store information about issued books
 struct IssuedBookInfo {
     int member_id;
     int book_id;
     time_t due_date;
 };
 
+// Structure to represent a book
 struct Book {
     int id;
     string name;
@@ -24,21 +26,25 @@ struct Book {
     string bookType;
 };
 
+// Function to read books from a CSV file and return a vector of books
 vector<Book> readBooksFromCSV(const string &filename) {
     vector<Book> books;
     ifstream file(filename);
 
+// Check if the file is open
     if (!file.is_open()) {
         cout << "Error opening file: " << filename << endl;
         return books;
     }
 
     string line;
+    // Read each line from the file
     while (getline(file, line)) {
         stringstream ss(line);
         Book book;
 
         char comma;
+        // Extract information from each line
         ss >> book.id >> comma;
         getline(ss, book.name, ',');
         ss >> book.pageCount >> comma;
@@ -46,13 +52,16 @@ vector<Book> readBooksFromCSV(const string &filename) {
         getline(ss, book.authorLastName, ',');
         getline(ss, book.bookType, ',');
 
+    // Add the book to the vector
         books.push_back(book);
     }
 
+// Close the file
     file.close();
     return books;
 }
 
+// Class to represent a member of the library
 class Member {
 public:
     int member_id;
@@ -62,6 +71,7 @@ public:
     Member(int id, const string& member_name) : member_id(id), name(member_name) {}
 };
 
+// Class to represent the library system
 class LibrarySystem {
 private:
     vector<Member*> members;
@@ -69,20 +79,25 @@ private:
     vector<IssuedBookInfo> issued_books;
 
 public:
+
+// Function to load books from a CSV file
     void loadBooksFromCSV(const string& csv_file) {
         books = readBooksFromCSV(csv_file);
         cout << "Books loaded successfully." << endl;
     }
 
+// Function to add a member to the library system
     void addMember(Member* member) {
         members.push_back(member);
         cout << "Member " << member->name << " added successfully. Member ID: " << member->member_id << endl;
     }
 
+// Function to issue a book to a member
     void issueBook(int member_id, int book_id) {
         Member* member = findMember(member_id);
         Book* book = findBook(book_id);
 
+// Check if the member and book exist
         if (member && book) {
             time_t due_date = time(nullptr) + 3 * 24 * 60 * 60; // 3 days in seconds
             issued_books.push_back({member_id, book_id, due_date});
@@ -98,14 +113,17 @@ public:
         }
     }
 
+// Function to return a book from a member
     void returnBook(int member_id, int book_id) {
         Member* member = findMember(member_id);
         Book* book = findBook(book_id);
 
+// Check if the member and book exist
         if (member && book) {
             auto it = find_if(issued_books.begin(), issued_books.end(), [member_id, book_id](const IssuedBookInfo& info) {
                 return info.member_id == member_id && info.book_id == book_id;
             });
+// Check if the book was issued to the member
 
             if (it != issued_books.end()) {
                 issued_books.erase(it);
@@ -126,9 +144,11 @@ public:
         }
     }
 
+// Function to display books borrowed by a member
     void displayBorrowedBooks(int member_id) {
         Member* member = findMember(member_id);
 
+// Check if the member exists
         if (member) {
             cout << "Books borrowed by " << member->name << ": ";
             for (const auto& book : member->borrowed_books) {
@@ -141,9 +161,11 @@ public:
         }
     }
 
+// Function to calculate the fine for a member
     void calculateFine(int member_id) {
         Member* member = findMember(member_id);
 
+// Check if the member exists
         if (member) {
             time_t now = time(nullptr);
 
@@ -154,6 +176,7 @@ public:
         }
     }
 
+// Function to display the main menu
     void displayMenu() {
         cout << "\n------ Library System Menu ------\n"
              << "1. Add Member\n"
@@ -164,6 +187,7 @@ public:
              << "0. Exit\n";
     }
 
+// Function to get a valid integer input from the user
     int getValidIntInput(const string& prompt) {
         int input;
         cout << prompt;
@@ -176,6 +200,7 @@ public:
         return input;
     }
 
+// Function to display available book IDs
     void displayAvailableBookIDs() {
         cout << "Available Book IDs: ";
         for (const auto& book : books) {
@@ -184,6 +209,7 @@ public:
         cout << endl;
     }
 
+// Function to run the library system
     void run() {
         int choice;
         do {
@@ -234,6 +260,7 @@ public:
     }
 
 private:
+// Function to find a member by ID
     Member* findMember(int member_id) {
         auto it = find_if(members.begin(), members.end(), [member_id](const Member* member) {
             return member->member_id == member_id;
@@ -242,6 +269,7 @@ private:
         return (it != members.end()) ? *it : nullptr;
     }
 
+// Function to find a book by ID
     Book* findBook(int book_id) {
         auto it = find_if(books.begin(), books.end(), [book_id](const Book& book) {
             return book.id == book_id;
@@ -250,6 +278,7 @@ private:
         return (it != books.end()) ? &(*it) : nullptr;
     }
 
+// Function to calculate the fine for a member
     int calculateFineForMember(const Member* member, time_t now) {
         int fine = 0;
 
@@ -269,6 +298,7 @@ private:
     }
 };
 
+// Main function
 int main() {
     LibrarySystem librarySystem;
     librarySystem.loadBooksFromCSV("library_books.csv");
