@@ -221,7 +221,7 @@ public:
                     int memberID = getValidIntInput("Enter Member ID: ");
                     string memberName;
                     cout << "Enter Member Name: ";
-                    cin >> ws; // Consume any leading whitespaces
+                    cin >> ws; 
                     getline(cin, memberName);
                     addMember(new Member(memberID, memberName));
                     break;
